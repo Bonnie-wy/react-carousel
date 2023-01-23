@@ -3,7 +3,22 @@ import styled from "styled-components";
 export const StyledImage = styled.img`
   width: 100%;
   height: 100%;
+`;
+
+export const StyledImageContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  position: relative;
+  ${({ left }) => (left ? `left: ${left}px;` : "")}
+  ${({ transition }) => (transition ? `transition: left ${transition};` : "")}
+`;
+
+export const StyledSliderContainer = styled.div`
+  width: 100%;
+  height: 100%;
   border-radius: 8px;
+  overflow: hidden;
 `;
 
 export const StyledContainer = styled.div`
@@ -30,6 +45,7 @@ export const StyledLeft = styled.button`
   cursor: pointer;
   position: absolute;
   left: 20px;
+  z-index: 1;
   &:hover:enabled {
     background-color: lightcoral;
   }
@@ -49,6 +65,7 @@ export const StyledRight = styled.button`
   cursor: pointer;
   position: absolute;
   right: 20px;
+  z-index: 1;
   &:hover:enabled {
     background-color: lightcoral;
   }
@@ -69,7 +86,7 @@ export const StyledNavigation = styled.div`
   width: fit-content;
 `;
 
-export const StyledNavigationButton = styled.button`
+export const StyledNavigationDots = styled.button`
   padding: 5px;
   margin-right: 5px;
   border: solid 2px lightcoral;

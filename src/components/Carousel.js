@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   StyledContainer,
   StyledImage,
@@ -6,47 +6,92 @@ import {
   StyledLeft,
   StyledRight,
   StyledNavigation,
-  StyledNavigationButton
+  StyledNavigationDots,
+  StyledImageContainer,
+  StyledSliderContainer,
 } from "./Carousel.styled";
 
 const Carousel = ({ data }) => {
-  const [count] = useState(data.length);
-  const [image, setImage] = useState(0);
-  const [disableLeft, setDisableLeft] = useState(false);
-  const [disableRight, setDisableRight] = useState(false);
+  const [slideState, setSlideState] = useState({
+    activeSlideIndex: 0,
+    transition: 0.45,
+    left: 0,
+  });
 
-  const handleLeftClick = () => {
-    if (image === 0) {
-      setDisableRight(true);
-      return;
+  const disableLeft = useMemo(
+    () => (slideState.activeSlideIndex < 0 ? true : false),
+    [slideState.activeSlideIndex]
+  );
+
+  console.log(disableLeft);
+
+  const disableRight = useMemo(
+    () => (slideState.activeSlideIndex > data.length - 1 ? true : false),
+    [slideState.activeSlideIndex]
+  );
+
+  console.log(disableRight);
+
+  const nextSlide = () => {
+    if (slideState.activeSlideIndex === data.length - 1) {
+      return setSlideState({
+        ...slideState,
+        left: 0,
+        activeSlideIndex: 0,
+      });
     }
-    setImage(image - 1);
-    setDisableLeft(false);
+
+    setSlideState({
+      ...slideState,
+      activeSlideIndex: slideState.activeSlideIndex + 1,
+      left: (slideState.activeSlideIndex + 1) * -596,
+    });
   };
 
-  const handleRightClick = () => {
-    if (image === count - 1) {
-      setDisableLeft(true);
-      return;
+  const prevSlide = () => {
+    if (slideState.activeSlideIndex === 0) {
+      return setSlideState({
+        ...slideState,
+        left: (data.length - 1) * 596,
+        activeSlideIndex: data.length - 1,
+      });
     }
-    setImage(image + 1);
-    setDisableRight(false);
+
+    setSlideState({
+      ...slideState,
+      activeIndex: slideState.activeSlideIndex - 1,
+      left: (slideState.activeSlideIndex - 1) * 596,
+    });
   };
 
   return (
     <StyledContainer>
       <StyledCarousel>
-        <StyledLeft onClick={handleLeftClick} disabled={disableRight} />
-        <StyledImage src={data[image].image} alt="nature" />
-        <StyledRight onClick={handleRightClick} disabled={disableLeft} />
+        <StyledLeft onClick={prevSlide} disabled={disableRight} />
+        <StyledSliderContainer>
+          <StyledImageContainer
+            left={slideState.left}
+            transition={slideState.transition}
+          >
+            {data &&
+              data.map((element) => (
+                <StyledImage
+                  key={element.id}
+                  src={element.image}
+                  alt="nature"
+                />
+              ))}
+          </StyledImageContainer>
+        </StyledSliderContainer>
+        <StyledRight onClick={nextSlide} disabled={disableLeft} />
         <StyledNavigation>
           {data &&
             data.map((element, index) => (
-              <Button
+              <NavigationDots
                 key={element.id}
                 imageNumber={index}
-                currentImage={image}
-                setImage={setImage}
+                currentImage={slideState.activeSlideIndex}
+                setImage={setSlideState}
               />
             ))}
         </StyledNavigation>
@@ -56,10 +101,8 @@ const Carousel = ({ data }) => {
 };
 export default Carousel;
 
-const Button = ({ imageNumber, setImage, currentImage }) => {
+const NavigationDots = ({ imageNumber, setImage, currentImage }) => {
   const [active, setActive] = useState(false);
-
-  console.log({ imageNumber, active });
 
   useEffect(() => {
     if (currentImage === imageNumber) {
@@ -70,8 +113,11 @@ const Button = ({ imageNumber, setImage, currentImage }) => {
   }, [currentImage, imageNumber]);
 
   const handleClick = () => {
-    setImage(imageNumber);
+    setImage({
+      ...slideState,
+      activeSlideIndex: imageNumber,
+    });
   };
 
-  return <StyledNavigationButton active={active} onClick={handleClick} />;
+  return <StyledNavigationDots active={active} onClick={handleClick} />;
 };
